@@ -12,8 +12,8 @@ function semantic_fields_preset_list() {
   $presets = semantic_fields_get_presets();
   foreach($presets as $preset) {
     $rows[] = array(
-      $preset['human_name'],
-      $preset['description'],
+      check_plain($preset['human_name']),
+      check_plain($preset['description']),
       l(t('edit'), 'admin/structure/semantic-fields/' . $preset['name'] . '/edit'),
     );
   }

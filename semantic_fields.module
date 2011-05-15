@@ -129,7 +129,7 @@ function semantic_fields_get_preset_options() {
     'default' => t('Default'),
   );
   foreach($presets as $preset) {
-    $options[$preset['name']] = check_plain($preset['human_name']);
+    $options[$preset['name']] = $preset['human_name'];
   }
   
   return $options;
