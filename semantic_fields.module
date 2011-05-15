@@ -150,7 +150,7 @@ function semantic_fields_preprocess_field(&$variables) {
     // Use defaults if Semantic Fields settings do not exist.
     $use_defaults = TRUE;
   }
-  else if ($instance['semantic_field_instance_format'] == 'default' && $field['semantic_field_format'] == 'default') {
+  else if (isset($instance['semantic_field_instance_format']) && $instance['semantic_field_instance_format'] == 'default' && isset($field['semantic_field_format']) && $field['semantic_field_format'] == 'default') {
     // Use defaults if this field is set to use the default field display format.
     $use_defaults = TRUE;
   }
