@@ -5,7 +5,7 @@ function semantic_fields_preset_list() {
   $header = array(
     t('Name'),
     t('Description'),
-    t('Operations'),
+    array('data' => t('Operations'), 'colspan' => 2),
   );
   $rows = array();
 
@@ -14,7 +14,8 @@ function semantic_fields_preset_list() {
     $rows[] = array(
       check_plain($preset['human_name']),
       check_plain($preset['description']),
-      l(t('edit'), 'admin/structure/semantic-fields/' . $preset['name'] . '/edit'),
+      l(t('edit'), 'admin/config/content/semantic-field-formats/' . $preset['name'] . '/edit'),
+      l(t('delete'), 'admin/config/content/semantic-field-formats/' . $preset['name'] . '/delete'),
     );
   }
 
@@ -381,7 +382,7 @@ function semantic_fields_preset_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Saved %label configuration.', array('%label' => $preset['human_name'])));
 
-  $form_state['redirect'] = 'admin/structure/semantic-fields/list';
+  $form_state['redirect'] = 'admin/config/content/semantic-field-formats/list';
 }
 
 function semantic_fields_preset_delete_form($form, &$form_state, $name) {
@@ -392,7 +393,7 @@ function semantic_fields_preset_delete_form($form, &$form_state, $name) {
     '#value' => $name,
   );
 
-  return confirm_form($form, t('Are you sure you want to delete this field preset?'), 'admin/structure/semantic-fields/presets');
+  return confirm_form($form, t('Are you sure you want to delete the field format %name?', array('%name' => $name)), 'admin/config/content/semantic-field-formats');
 }
 
 function semantic_fields_preset_delete_form_submit($form, &$form_state) {
@@ -403,5 +404,5 @@ function semantic_fields_preset_delete_form_submit($form, &$form_state) {
 
   // TODO: Update fields that were using the deleted preset to now use the default field format.
 
-  $form_state['redirect'] = 'admin/strucure/semantic-fields/presets';
+  $form_state['redirect'] = 'admin/config/content/semantic-field-formats';
 }

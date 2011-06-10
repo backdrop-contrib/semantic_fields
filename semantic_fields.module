@@ -5,22 +5,22 @@
 function semantic_fields_menu() {
   $items = array();
 
-  $items['admin/structure/semantic-fields'] = array(
+  $items['admin/config/content/semantic-field-formats'] = array(
     'title' => 'Field formats',
-    'description' => 'Manage customized, semantic formats for displaying fields.',
+    'description' => 'Configure customized, semantic rich formats for use when displaying fields.',
     'page callback' => 'semantic_fields_preset_list',
     'access arguments' => array('administer semantic fields'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'semantic_fields.admin.inc',
   );
-  $items['admin/structure/semantic-fields/list'] = array(
+  $items['admin/config/content/semantic-field-formats/list'] = array(
     'title' => 'List',
     'page callback' => 'semantic_fields_preset_list',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'semantic_fields.admin.inc',
     'weight' => '-1'
   );
-  $items['admin/structure/semantic-fields/add'] = array(
+  $items['admin/config/content/semantic-field-formats/add'] = array(
     'title' => 'Add field format',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('semantic_fields_preset_form'),
@@ -29,18 +29,18 @@ function semantic_fields_menu() {
     'file' => 'semantic_fields.admin.inc',
   );
   foreach (semantic_fields_get_presets() as $preset) {
-    $items['admin/structure/semantic-fields/' . $preset['name'] . '/edit'] = array(
+    $items['admin/config/content/semantic-field-formats/' . $preset['name'] . '/edit'] = array(
       'title' => 'Edit field format',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('semantic_fields_preset_form', 3),
+      'page arguments' => array('semantic_fields_preset_form', 4),
       'access arguments' => array('administer semantic fields'),
       'type' => MENU_CALLBACK,
       'file' => 'semantic_fields.admin.inc',
     );
-    $items['admin/structure/semantic-fields/' . $preset['name'] . '/delete'] = array(
+    $items['admin/config/content/semantic-field-formats/' . $preset['name'] . '/delete'] = array(
       'title' => 'Delete field format',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('semantic_fields_preset_delete_form', 3),
+      'page arguments' => array('semantic_fields_preset_delete_form', 4),
       'access arguments' => array('administer semantic fields'),
       'type' => MENU_CALLBACK,
       'file' => 'semantic_fields.admin.inc',
