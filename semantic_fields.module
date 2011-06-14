@@ -62,30 +62,54 @@ function semantic_fields_permission() {
   );
 }
 
-function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'field_ui_field_edit_form') {
-    $field = $form['#field'];
-    $instance = $form['#instance'];
+/**
+ * Implementation of hook_form_alter().
+ */
+function semantic_fields_form_alter(&$form, &$form_state, $form_id) {  
+  if ($form_id == "field_ui_display_overview_form") {
+    $entity_type = $form['#entity_type'];
+    $bundle = $form['#bundle'];
+    $view_mode = $form['#view_mode'];
+    
+    $form['fields']['#header'][] = t('Field format');
 
-    $semantic_field_formats = semantic_fields_get_preset_options();
+    foreach (element_children($form['fields']) as $name) {
+      $instance = field_info_instance($entity_type, $name, $bundle);
+      $display = $instance['display'][$view_mode];
+      $settings = (isset($form_state['formatter_settings'][$name]) ? $form_state['formatter_settings'][$name] : $display['settings']);
 
-    $form['instance']['semantic_field_instance_format'] = array(
-      '#type' => 'select',
-      '#title' => t('Display format'),
-      '#description' => t('The format to use when viewing this field.'),
-      '#options' => $semantic_field_formats,
-      '#required' => FALSE,
-      '#default_value' => isset($instance['semantic_field_instance_format']) ? $instance['semantic_field_instance_format'] : '',
-    );
+      $form['fields'][$name]['semantic_field_format'] = array(
+        '#type' => 'select',
+        '#options' => semantic_fields_get_preset_options(),
+        '#empty_option' => t('Default'),
+        '#default_value' => (isset($settings['semantic_field_format']) ? $settings['semantic_field_format'] : ''),
+      );
+    }
+    
+    $form['#submit'] = array_merge(array('semantic_fields_field_ui_display_overview_form_submit'), $form['#submit']);
+  }
+}
 
-    $form['field']['semantic_field_format'] = array(
-      '#type' => 'select',
-      '#title' => t('Display format'),
-      '#description' => t('The format to use when viewing this field.'),
-      '#options' => $semantic_field_formats,
-      '#required' => FALSE,
-      '#default_value' => isset($field['semantic_field_format']) ? $field['semantic_field_format'] : '',
-    );
+function semantic_fields_field_ui_display_overview_form_submit(&$form, &$form_state) {
+  $form_values = $form_state['values'];
+  $entity_type = $form['#entity_type'];
+  $bundle = $form['#bundle'];
+  $view_mode = $form['#view_mode'];
+
+  foreach ($form['#fields'] as $field_name) {
+    // Retrieve the stored instance settings to merge with the incoming values.
+    $instance = field_read_instance($entity_type, $field_name, $bundle);
+    $instance['display'][$view_mode]['settings']['semantic_field_format'] = $form_values['fields'][$field_name]['semantic_field_format'];
+    field_update_instance($instance);
+  }
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function semantic_fields_field_formatter_info_alter(&$info) {
+  foreach (array_keys($info) as $name) {
+    $info[$name]['settings']['semantic_field_format'] = 0;
   }
 }
 
@@ -125,9 +149,7 @@ function semantic_fields_preset_load($name) {
 function semantic_fields_get_preset_options() {
   $presets = semantic_fields_get_presets();
 
-  $options = array(
-    'default' => t('Default'),
-  );
+  $options = array();
   foreach($presets as $preset) {
     $options[$preset['name']] = $preset['human_name'];
   }
@@ -144,26 +166,16 @@ function semantic_fields_preprocess_field(&$variables) {
   $element = $variables['element'];
   $field = field_info_field($element['#field_name']);
   $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
-
+  
   $use_defaults = FALSE;
-  if (!isset($instance['semantic_field_instance_format']) && !isset($field['semantic_field_format'])) {
+  if (!isset($instance['display'][$element['#view_mode']]['settings']['semantic_field_format']) || empty($instance['display'][$element['#view_mode']]['settings']['semantic_field_format'])) {
     // Use defaults if Semantic Fields settings do not exist.
-    $use_defaults = TRUE;
-  }
-  else if (isset($instance['semantic_field_instance_format']) && $instance['semantic_field_instance_format'] == 'default' && isset($field['semantic_field_format']) && $field['semantic_field_format'] == 'default') {
-    // Use defaults if this field is set to use the default field display format.
     $use_defaults = TRUE;
   }
 
   // Load semantic field display format settings.
   if (!$use_defaults) {
-    $preset = array();
-    if (!empty($instance['semantic_field_instance_format'])) {
-      $preset = semantic_fields_preset_load($instance['semantic_field_instance_format']);
-    }
-    if (empty($preset) && !empty($instance['semantic_field_format'])) {
-      $preset = semantic_fields_preset_load($instance['semantic_field_format']);
-    }
+    $preset = semantic_fields_preset_load($instance['display'][$element['#view_mode']]['settings']['semantic_field_format']);
   }
   if (empty($preset)) {
     // Use defaults if settings could not be loaded.
@@ -199,6 +211,7 @@ function semantic_fields_preprocess_field(&$variables) {
   }
 
   // Provide Semantic Fields field template suggestions.
+  $variables['theme_hook_suggestions'][] = 'semantic_field';
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_type'];
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_name'];
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#bundle'];
@@ -309,9 +322,11 @@ function semantic_fields_process_field(&$variables) {
   $variables['content_classes'] = (isset($variables['content_classes_array']) && !empty($variables['label_classes_array'])) ? implode(' ', $variables['content_classes_array']) : '';
   
   // Item
-  foreach ($variables['item_classes'] as $delta => $classes) {
-    if (is_array($classes)) {
-      $variables['item_classes'][$delta] = implode(' ', $classes);
+  if (isset($variables['item_classes']) && is_array($variables['item_classes'])) {
+    foreach ($variables['item_classes'] as $delta => $classes) {
+      if (is_array($classes)) {
+        $variables['item_classes'][$delta] = implode(' ', $classes);
+      }
     }
   }
 }
