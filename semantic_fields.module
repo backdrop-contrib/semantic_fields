@@ -166,16 +166,17 @@ function semantic_fields_preprocess_field(&$variables) {
   $element = $variables['element'];
   $field = field_info_field($element['#field_name']);
   $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
+  $display = (isset($instance['display'][$element['#view_mode']]) ? $instance['display'][$element['#view_mode']] : $instance['display']['default']);
   
   $use_defaults = FALSE;
-  if (!isset($instance['display'][$element['#view_mode']]['settings']['semantic_field_format']) || empty($instance['display'][$element['#view_mode']]['settings']['semantic_field_format'])) {
+  if (!isset($display['settings']['semantic_field_format']) || empty($display['settings']['semantic_field_format'])) {
     // Use defaults if Semantic Fields settings do not exist.
     $use_defaults = TRUE;
   }
 
   // Load semantic field display format settings.
   if (!$use_defaults) {
-    $preset = semantic_fields_preset_load($instance['display'][$element['#view_mode']]['settings']['semantic_field_format']);
+    $preset = semantic_fields_preset_load($display['settings']['semantic_field_format']);
   }
   if (empty($preset)) {
     // Use defaults if settings could not be loaded.
