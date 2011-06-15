@@ -44,7 +44,8 @@
 
 #semantic-fields-preset-form .semantic-fields-single-values-settings .form-item {margin: 0;}
 
-#semantic-fields-preset-form .form-item-semantic-field-settings-field-prefix {
+#semantic-fields-preset-form .form-item-semantic-field-settings-field-prefix,
+#semantic-fields-preset-form .form-item-semantic-field-settings-multiple-item-separator {
   clear: left;
   margin-left: 0 !important;
 }

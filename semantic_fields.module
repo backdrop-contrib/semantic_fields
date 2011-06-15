@@ -200,6 +200,7 @@ function semantic_fields_preprocess_field(&$variables) {
       'multiple_items_class' => '',
       'multiple_item_element' => 'div',
       'multiple_item_class' => '',
+      'multiple_item_separator' => '',
       'use_singlevalue_settings' => 0,
       'single_item_element' => 'div',
       'single_item_class' => '',
@@ -272,9 +273,11 @@ function semantic_fields_preprocess_field(&$variables) {
   // Item
   if ($num_items == 1 && $settings['use_singlevalue_settings']) {
     $variables['item_element'] = $settings['single_item_element'];
+    $variables['item_separator'] = '';
   }
   else {
     $variables['item_element'] = $settings['multiple_item_element'];
+    $variables['item_separator'] = ($num_items > 1 && !empty($settings['multiple_item_separator']) ? $settings['multiple_item_separator'] : '');
   }
 
   $variables['item_classes'] = array();
@@ -372,6 +375,10 @@ function theme_semantic_field(&$variables) {
     $output .= drupal_render($item);
     if ($variables['item_element']) {
       $output .= '</' . $variables['item_element'] . '>';
+    }
+    
+    if (!empty($variables['item_separator']) && $delta < (count($variables['items']) - 1)) {
+      $output .= $variables['item_separator'];
     }
   }
   if (!empty($variables['content_element'])) {

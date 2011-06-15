@@ -261,6 +261,14 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#default_value' => isset($settings['multiple_item_class']) ? $settings['multiple_item_class'] : '',
     '#required' => FALSE,
   );
+  $form['semantic_field_settings']['items_fieldset']['multivalue']['item_element']['multiple_item_separator'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Separate each field value with'),
+    '#description' => t('Insert the desired character(s) to use as a separator between each field value. For example, this could be used to display the field values as a comma separated list.'),
+    '#default_value' => isset($settings['multiple_item_separator']) ? $settings['multiple_item_separator'] : '',
+    '#required' => FALSE,
+    '#size' => 20,
+  );
   $form['semantic_field_settings']['items_fieldset']['singlevalue'] = array(
     '#type' => 'fieldset',
     '#title' => t('Single value field'),
