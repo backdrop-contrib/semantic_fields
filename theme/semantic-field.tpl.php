@@ -70,6 +70,10 @@ HTML comment.
       <<?php print $item_element; ?> class="<?php print $item_classes[$delta]; ?>"<?php print $item_attributes[$delta]; ?>>
         <?php print render($item); ?>
       </<?php print $item_element; ?>>
+      
+      <?php if (!empty($item_separator) && $delta < (count($items) - 1)) : ?>
+      <?php print $item_separator; ?>
+      <?php endif; ?>
     <?php endforeach; ?>
   <?php if (!empty($content_element)): ?>
   </<?php print $content_element; ?>>
