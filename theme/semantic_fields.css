@@ -43,3 +43,8 @@
 }
 
 #semantic-fields-preset-form .semantic-fields-single-values-settings .form-item {margin: 0;}
+
+#semantic-fields-preset-form .form-item-semantic-field-settings-field-prefix {
+  clear: left;
+  margin-left: 0 !important;
+}

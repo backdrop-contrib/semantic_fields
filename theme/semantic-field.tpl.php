@@ -48,6 +48,9 @@ See http://api.drupal.org/api/function/theme_field/7 for details.
 After copying this file to your theme's folder and customizing it, remove this
 HTML comment.
 -->
+<?php if (!empty($field_prefix)) : ?>
+<?php print $field_prefix; ?>
+<?php endif; ?>
 <?php if (!empty($field_element)) : ?>
 <<?php print $field_element; ?> class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
 <?php endif; ?>
@@ -73,4 +76,7 @@ HTML comment.
   <?php endif; ?>
 <?php if (!empty($field_element)) : ?>
 </<?php print $field_element; ?>>
+<?php endif; ?>
+<?php if (!empty($field_suffix)) : ?>
+<?php print $field_suffix; ?>
 <?php endif; ?>

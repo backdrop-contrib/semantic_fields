@@ -114,6 +114,21 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#default_value' => isset($settings['field_class']) ? $settings['field_class'] : '',
     '#required' => FALSE,
   );
+  $form['semantic_field_settings']['field_container_fieldset']['field_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('And a prefix of'),
+    '#default_value' => isset($settings['field_prefix']) ? $settings['field_prefix'] : '',
+    '#description' => t('Insert the desired character(s) to output before the field.'),
+    '#required' => FALSE,
+    '#size' => 20,
+  );
+  $form['semantic_field_settings']['field_container_fieldset']['field_suffix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('And a suffix of'),
+    '#default_value' => isset($settings['field_suffix']) ? $settings['field_suffix'] : '',
+    '#description' => t('Insert the desired character(s) to output after the field.'),
+    '#required' => FALSE,
+  );
   $form['semantic_field_settings']['label_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Field label'),

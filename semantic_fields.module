@@ -188,6 +188,8 @@ function semantic_fields_preprocess_field(&$variables) {
     $settings = array(
       'field_element' => 'div',
       'field_class' => '',
+      'field_prefix' => '',
+      'field_suffix' => '',
       'label_element_above' => 'div',
       'label_class_above' => '',
       'label_suffix_above' => ':',
@@ -220,6 +222,8 @@ function semantic_fields_preprocess_field(&$variables) {
 
   // Field
   $variables['field_element'] = $settings['field_element'];
+  $variables['field_prefix'] = !empty($settings['field_prefix']) ? $settings['field_prefix'] : '';
+  $variables['field_suffix'] = !empty($settings['field_suffix']) ? $settings['field_suffix'] : '';
   if (!empty($settings['field_class'])) {
     $variables['classes_array'][] = $settings['field_class'];
   }
@@ -377,6 +381,14 @@ function theme_semantic_field(&$variables) {
   // Render the top-level DIV.
   if (!empty($variables['field_element'])) {
     $output = '<' . $variables['field_element'] . ' class="' . $variables['classes'] . '"' . $variables['attributes'] . '>' . $output . '</' . $variables['field_element'] . '>';
+  }
+  
+  // Add a prefix and suffix to the field, if specified
+  if (!empty($variables['field_prefix'])) {
+    $output = $variables['field_prefix'] . $output;
+  }
+  if (!empty($variables['field_suffix'])) {
+    $output .= $variables['field_suffix'];
   }
 
   return $output;
