@@ -52,7 +52,7 @@ HTML comment.
 <?php print $field_prefix; ?>
 <?php endif; ?>
 <?php if (!empty($field_element)) : ?>
-<<?php print $field_element; ?> class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
+<<?php print $field_element; ?> class="<?php print $classes; ?>"<?php print $attributes; ?>>
 <?php endif; ?>
   <?php if (!$label_hidden) : ?>
     <?php if (!empty($label_element)) : ?>
