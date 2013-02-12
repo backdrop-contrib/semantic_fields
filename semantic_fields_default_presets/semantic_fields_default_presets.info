@@ -1,0 +1,6 @@
+name = Semantic Fields default presets
+description = "Provides default presets for Semantic Fields"
+package = Fields
+dependencies[] = field
+dependencies[] = ctools
+core = 7.x

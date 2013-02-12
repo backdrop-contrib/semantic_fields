@@ -1,90 +1,52 @@
 <?php
-function semantic_fields_preset_list() {
-  $output  = '';
+/**
+ * @file
+ *  Export UI functions
+ */
 
-  $header = array(
-    t('Name'),
-    t('Description'),
-    array('data' => t('Operations'), 'colspan' => 2),
-  );
-  $rows = array();
+/**
+ * Define this Export UI plugin.
+ */
+$plugin = array(
+  'schema' => 'semantic_fields_preset',
+  'access' => 'administer semantic fields ',
+  'menu' => array(
+    'menu item' => 'semantic_fields',
+    'menu title' => 'Semantic fields',
+    'menu description' => 'Administer Semantic fields presets.',
+  ),
+  'load callback' => 'semantic_fields_preset_load',
+  'title singular' => t('preset'),
+  'title plural' => t('presets'),
+  'title singular proper' => t('Semantic fields preset'),
+  'title plural proper' => t('Semantic fields presets'),
+  'form' => array(
+    'settings' => 'semantic_fields_ctools_export_ui_form',
+    'submit' => 'semantic_fields_ctools_export_ui_form_submit',
+  ),
+);
 
-  $presets = semantic_fields_get_presets();
-  foreach($presets as $preset) {
-    $rows[] = array(
-      check_plain($preset['human_name']),
-      check_plain($preset['description']),
-      l(t('edit'), 'admin/config/content/semantic-field-formats/' . $preset['name'] . '/edit'),
-      l(t('delete'), 'admin/config/content/semantic-field-formats/' . $preset['name'] . '/delete'),
-    );
+
+/**
+* Define the preset add/edit form.
+*/
+function semantic_fields_ctools_export_ui_form(&$form, &$form_state) {
+  $preset = $form_state['item'];
+
+  if(isset($preset->id)) {
+     $form['id'] = array(
+    '#type' => 'hidden',
+    '#value' => $preset->id,
+  ); 
   }
 
-  if (count($rows) > 0) {
-    $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  }
-  else {
-    $output .= t('No custom field formats have been added yet.');
-  }
-
-  return $output;
-}
-
-function semantic_fields_preset_form($form, &$form_state, $name = '') {
-  if (!empty($name)) {
-    drupal_set_title(t('Update field format'));
-    $preset = semantic_fields_preset_load($name);
-    $settings = $preset['data'];
-    $op = 'update';
-  }
-  else {
-    drupal_set_title(t('Add field format'));
-    $settings = array();
-    $op = 'insert';
-  }
-
-  $form['#attached']['css'] = array(drupal_get_path('module', 'semantic_fields') . '/theme/semantic_fields.css');
-
-  $form['basic_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Basic settings'),
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-    '#tree' => TRUE,
-  );
-  $form['basic_settings']['op'] = array(
-    '#type' => 'value',
-    '#value' => $op,
-  );
-  if ($op == 'insert') {
-    $form['basic_settings']['name'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Machine name'),
-      '#description' => t('A unique name to identify this field format in the database (a-z, 0-9, _).'),
-      '#required' => TRUE,
-    );
-  }
-  else {
-    $form['basic_settings']['name'] = array(
-      '#type' => 'value',
-      '#value' => $preset['name'],
-    );
-  }
-  $form['basic_settings']['human_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name'),
-    '#description' => t('A human-readable name to identify this field format.'),
-    '#default_value' => isset($preset['human_name']) ? $preset['human_name'] : '',
-    '#required' => TRUE,
-  );
-
-  $form['basic_settings']['description'] = array(
+  $form['description'] = array(
     '#type' => 'textarea',
     '#title' => t('Description'),
     '#description' => t('A description of this field format.'),
-    '#default_value' => isset($preset['description']) ? $preset['description'] : '',
+    '#default_value' => isset($preset->description) ? $preset->description : '',
     '#required' => FALSE,
   );
-
   $form['semantic_field_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Semantic field settings'),
@@ -96,14 +58,14 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'fieldset',
     '#title' => t('Field container'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
     '#parents' => array('semantic_field_settings'),
   );
   $form['semantic_field_settings']['field_container_fieldset']['field_element'] = array(
     '#type' => 'textfield',
     '#title' => t('Surround the entire field with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will be the container for the entire field. Leave blank for no surrounding element.'),
-    '#default_value' => isset($settings['field_element']) ? $settings['field_element'] : 'div',
+    '#default_value' => isset($preset->data['field_element']) ? $preset->data['field_element'] : 'div',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -111,13 +73,13 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Choose field element class(es)'),
     '#description' => t('The field element automatically gets field, field type and specific field classes (ie. <em>field field-type-text field-field-my-field-name</em>).'),
-    '#default_value' => isset($settings['field_class']) ? $settings['field_class'] : '',
+    '#default_value' => isset($preset->data['field_class']) ? $preset->data['field_class'] : '',
     '#required' => FALSE,
   );
   $form['semantic_field_settings']['field_container_fieldset']['field_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t('And a prefix of'),
-    '#default_value' => isset($settings['field_prefix']) ? $settings['field_prefix'] : '',
+    '#default_value' => isset($preset->data['field_prefix']) ? $preset->data['field_prefix'] : '',
     '#description' => t('Insert the desired character(s) to output before the field.'),
     '#required' => FALSE,
     '#size' => 20,
@@ -125,7 +87,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
   $form['semantic_field_settings']['field_container_fieldset']['field_suffix'] = array(
     '#type' => 'textfield',
     '#title' => t('And a suffix of'),
-    '#default_value' => isset($settings['field_suffix']) ? $settings['field_suffix'] : '',
+    '#default_value' => isset($preset->data['field_suffix']) ? $preset->data['field_suffix'] : '',
     '#description' => t('Insert the desired character(s) to output after the field.'),
     '#required' => FALSE,
   );
@@ -134,7 +96,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#title' => t('Field label'),
     '#description' => t('<strong>Please note that the placement or appearance of the label is still determined by the field display settings.</strong>'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
     '#attributes' => array('class' => array('semantic-fields-labels')),
   );
   $form['semantic_field_settings']['label_fieldset']['above'] = array(
@@ -150,7 +112,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Surround the label with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will surround the label.'),
-    '#default_value' => isset($settings['label_element_above']) ? $settings['label_element_above'] : 'h3',
+    '#default_value' => isset($preset->data['label_element_above']) ? $preset->data['label_element_above'] : 'h3',
     '#required' => TRUE,
     '#size' => 20,
   );
@@ -158,7 +120,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a class of'),
     '#description' => t('The label automatically gets a class of <em>field-label</em>.'),
-    '#default_value' => isset($settings['label_class_above']) ? $settings['label_class_above'] : '',
+    '#default_value' => isset($preset->data['label_class_above']) ? $preset->data['label_class_above'] : '',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -166,7 +128,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a suffix of'),
     '#description' => t('Insert the desired suffix character, eg. a colon'),
-    '#default_value' => isset($settings['label_suffix_above']) ? $settings['label_suffix_above'] : '',
+    '#default_value' => isset($preset->data['label_suffix_above']) ? $preset->data['label_suffix_above'] : '',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -183,7 +145,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Surround the label with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will surround the label.'),
-    '#default_value' => isset($settings['label_element_inline']) ? $settings['label_element_inline'] : 'span',
+    '#default_value' => isset($preset->data['label_element_inline']) ? $preset->data['label_element_inline'] : 'span',
     '#required' => TRUE,
     '#size' => 20,
   );
@@ -191,7 +153,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a class of'),
     '#description' => t('The label automatically gets a class of <em>field-label-inline</em>.'),
-    '#default_value' => isset($settings['label_class_inline']) ? $settings['label_class_inline'] : '',
+    '#default_value' => isset($preset->data['label_class_inline']) ? $preset->data['label_class_inline'] : '',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -199,7 +161,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a suffix of'),
     '#description' => t('Insert the desired suffix character, eg. a colon'),
-    '#default_value' => isset($settings['label_suffix_inline']) ? $settings['label_suffix_inline'] : ':',
+    '#default_value' => isset($preset->data['label_suffix_inline']) ? $preset->data['label_suffix_inline'] : ':',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -207,7 +169,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'fieldset',
     '#title' => t('Field value(s)'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
     '#attributes' => array('class' => array('semantic-fields-multiple-values')),
   );
   $form['semantic_field_settings']['items_fieldset']['multivalue'] = array(
@@ -228,7 +190,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Surround all field values with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will be the container for all field values. Leave blank for no surrounding element.'),
-    '#default_value' => isset($settings['multiple_items_element']) ? $settings['multiple_items_element'] : 'div',
+    '#default_value' => isset($preset->data['multiple_items_element']) ? $preset->data['multiple_items_element'] : 'div',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -236,7 +198,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a class of'),
     '#description' => t('The surrounding fields element automatically gets the <em>field-items</em> class.'),
-    '#default_value' => isset($settings['multiple_items_class']) ? $settings['multiple_items_class'] : '',
+    '#default_value' => isset($preset->data['multiple_items_class']) ? $preset->data['multiple_items_class'] : '',
     '#required' => FALSE,
   );
   $form['semantic_field_settings']['items_fieldset']['multivalue']['item_element'] = array(
@@ -250,7 +212,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Surround each field value with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will be the container for each field value. Leave blank for no surrounding element.'),
-    '#default_value' => isset($settings['multiple_item_element']) ? $settings['multiple_item_element'] : 'div',
+    '#default_value' => isset($preset->data['multiple_item_element']) ? $preset->data['multiple_item_element'] : 'div',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -258,14 +220,14 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('And a class of'),
     '#description' => t('Each field instance automatically gets the <em>field-item</em> class. Insert a # where you want enumeration (ie field-item-#).'),
-    '#default_value' => isset($settings['multiple_item_class']) ? $settings['multiple_item_class'] : '',
+    '#default_value' => isset($preset->data['multiple_item_class']) ? $preset->data['multiple_item_class'] : '',
     '#required' => FALSE,
   );
   $form['semantic_field_settings']['items_fieldset']['multivalue']['item_element']['multiple_item_separator'] = array(
     '#type' => 'textfield',
     '#title' => t('Separate each field value with'),
     '#description' => t('Insert the desired character(s) to use as a separator between each field value. For example, this could be used to display the field values as a comma separated list.'),
-    '#default_value' => isset($settings['multiple_item_separator']) ? $settings['multiple_item_separator'] : '',
+    '#default_value' => isset($preset->data['multiple_item_separator']) ? $preset->data['multiple_item_separator'] : '',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -282,7 +244,7 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#title' => t('Use the following settings when the field contains only one value'),
     '#description' => t('Leave this unchecked to use multiple value field settings when the field contains only one value.'),
     '#return_value' => 1,
-    '#default_value' => isset($settings['use_singlevalue_settings']) ? $settings['use_singlevalue_settings'] : 0,
+    '#default_value' => isset($preset->data['use_singlevalue_settings']) ? $preset->data['use_singlevalue_settings'] : 0,
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -297,14 +259,14 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Surround field value with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will be the container for a single field value. Leave blank for no surrounding element.'),
-    '#default_value' => isset($settings['single_item_element']) ? $settings['single_item_element'] : 'div',
+    '#default_value' => isset($preset->data['single_item_element']) ? $preset->data['single_item_element'] : 'div',
     '#required' => FALSE,
     '#size' => 20,
   );
   $form['semantic_field_settings']['items_fieldset']['singlevalue']['singlevalues']['single_item_class'] = array(
     '#type' => 'textfield',
     '#title' => t('And a class of'),
-    '#default_value' => isset($settings['single_item_class']) ? $settings['single_item_class'] : '',
+    '#default_value' => isset($preset->data['single_item_class']) ? $preset->data['single_item_class'] : '',
     '#description' => t('The field instance will automatically get a <em>field-item</em> class.'),
     '#required' => FALSE,
   );
@@ -320,21 +282,21 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
   $form['semantic_field_settings']['items_fieldset']['nth_fieldset']['last_every_nth'] = array(
     '#type' => 'textfield',
     '#title' => t('FIRST/LAST every n<sup>th</sup>'),
-    '#default_value' => isset($settings['last_every_nth']) && is_numeric($settings['last_every_nth']) ? $settings['last_every_nth'] : '0',
+    '#default_value' => isset($preset->data['last_every_nth']) && is_numeric($preset->data['last_every_nth']) ? $preset->data['last_every_nth'] : '0',
     '#required' => FALSE,
     '#size' => 20,
   );
   $form['semantic_field_settings']['items_fieldset']['nth_fieldset']['first_class'] = array(
     '#type' => 'textfield',
     '#title' => t('FIRST class attribute'),
-    '#default_value' => isset($settings['first_class']) ? $settings['first_class'] : 'first',
+    '#default_value' => isset($preset->data['first_class']) ? $preset->data['first_class'] : 'first',
     '#required' => FALSE,
     '#size' => 20,
   );
   $form['semantic_field_settings']['items_fieldset']['nth_fieldset']['last_class'] = array(
     '#type' => 'textfield',
     '#title' => t('LAST class attribute'),
-    '#default_value' => isset($settings['last_class']) ? $settings['last_class'] : 'last',
+    '#default_value' => isset($preset->data['last_class']) ? $preset->data['last_class'] : 'last',
     '#required' => FALSE,
     '#size' => 20,
   );
@@ -350,82 +312,38 @@ function semantic_fields_preset_form($form, &$form_state, $name = '') {
     '#type' => 'textfield',
     '#title' => t('Striping class attributes'),
     '#description' => t('One striping class attribute is applied to each row. Separate multiple attributes with a space.'),
-    '#default_value' => isset($settings['striping_classes']) ? $settings['striping_classes'] : 'odd even',
+    '#default_value' => isset($preset->data['striping_classes']) ? $preset->data['striping_classes'] : 'odd even',
     '#required' => FALSE,
   );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save settings'),
+  $form['semantic_field_settings']['tokens_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Tokens'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#attributes' => array('class' => array('semantic-fields-tokens-fieldset')),
+    '#parents' => array('semantic_field_settings'),
   );
-
+  if (module_exists('token') == TRUE) {
+    $form['semantic_field_settings']['tokens_fieldset']['info'] = array(
+      '#markup' => t('You could use tokens, like
+        <em>[node:title]</em> and <em>[node:url]</em>' .
+           theme('token_tree', array(
+          'token_types' => 'all', 
+          'click_insert' => FALSE, 
+          'show_restricted' => TRUE))),
+    );
+  }
+  else {
+    $form['semantic_field_settings']['tokens_fieldset']['info'] = array(
+      '#markup' => '<p>If you enable the token module you could use tokens in </p>',
+    );
+  }
   return $form;
 }
 
-function semantic_fields_preset_form_validate($form, &$form_state) {
-  $op = $form_state['values']['basic_settings']['op'];
-  $name = $form_state['values']['basic_settings']['name'];
-  
-  // Invalid field name.
-  if (!preg_match('!^[a-z0-9_]+$!', $name)) {
-    form_set_error('basic_settings][name', t('The machine name %name is invalid. The name must include only lowercase unaccentuated letters, numbers, and underscores.', array('%name' => $name)));
-  }
-  if (strlen($name) > 32) {
-    form_set_error('basic_settings][name', t("The machine name %name is too long. The name is limited to 32 characters.", array('%name' => $name)));
-  }
-
-  if ($op == 'insert') {
-    // Machine name already exists.
-    $preset = semantic_fields_preset_load($name);
-    if ($preset) {
-      form_set_error('basic_settings][name', t("The machine name %name already exists.", array('%name' => $name)));
-    }
-  }
-}
-
-function semantic_fields_preset_form_submit($form, &$form_state) {
-  $op = $form_state['values']['basic_settings']['op'];
-
-  $preset = array(
-    'name' => $form_state['values']['basic_settings']['name'],
-    'human_name' => $form_state['values']['basic_settings']['human_name'],
-    'description' => $form_state['values']['basic_settings']['description'],
-    'data' => $form_state['values']['semantic_field_settings'],
-  );
-
-  if ($op == 'update') {
-    $preset_source = semantic_fields_preset_load($form_state['values']['basic_settings']['name']);
-    $preset = array_merge($preset_source, $preset);
-    drupal_write_record('semantic_fields_preset', $preset, 'id');
-  }
-  else {
-    drupal_write_record('semantic_fields_preset', $preset);
-    // When a new preset is created, the menu needs to be rebuilt.
-    variable_set('menu_rebuild_needed', TRUE);
-  }
-
-  drupal_set_message(t('Saved %label configuration.', array('%label' => $preset['human_name'])));
-
-  $form_state['redirect'] = 'admin/config/content/semantic-field-formats/list';
-}
-
-function semantic_fields_preset_delete_form($form, &$form_state, $name) {
-  // TODO: check if preset is being used on any fields.
-  
-  $form['name'] = array(
-    '#type' => 'value',
-    '#value' => $name,
-  );
-
-  return confirm_form($form, t('Are you sure you want to delete the field format %name?', array('%name' => $name)), 'admin/config/content/semantic-field-formats');
-}
-
-function semantic_fields_preset_delete_form_submit($form, &$form_state) {
-  db_delete('semantic_fields_preset')
-      ->condition('name', $form_state['values']['name'])
-      ->execute();
-  drupal_set_message(t('The field preset has been deleted.'));
-
-  // TODO: Update fields that were using the deleted preset to now use the default field format.
-
-  $form_state['redirect'] = 'admin/config/content/semantic-field-formats';
+/**
+* Submit handler for the preset edit form.
+*/
+function semantic_fields_ctools_export_ui_form_submit($form, &$form_state) {
+  $form_state['values']['data'] = $form_state['values']['semantic_field_settings'];
 }

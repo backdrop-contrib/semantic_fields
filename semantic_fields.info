@@ -1,7 +1,6 @@
 name = Semantic Fields
 description = "Provides semantic HTML output settings for each field type."
-configure = admin/config/content/semantic-field-formats
 package = Fields
 dependencies[] = field
-dependencies[] = field_ui
+dependencies[] = ctools
 core = 7.x

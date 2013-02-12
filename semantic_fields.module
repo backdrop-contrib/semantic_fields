@@ -1,57 +1,11 @@
 <?php
 /**
- * Implementation of hook_menu()
+ * @file
+ * The functionality of the module 
  */
-function semantic_fields_menu() {
-  $items = array();
-
-  $items['admin/config/content/semantic-field-formats'] = array(
-    'title' => 'Field formats',
-    'description' => 'Configure customized, semantic rich formats for use when displaying fields.',
-    'page callback' => 'semantic_fields_preset_list',
-    'access arguments' => array('administer semantic fields'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'semantic_fields.admin.inc',
-  );
-  $items['admin/config/content/semantic-field-formats/list'] = array(
-    'title' => 'List',
-    'page callback' => 'semantic_fields_preset_list',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'semantic_fields.admin.inc',
-    'weight' => '-1'
-  );
-  $items['admin/config/content/semantic-field-formats/add'] = array(
-    'title' => 'Add field format',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('semantic_fields_preset_form'),
-    'access arguments' => array('administer semantic fields'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'semantic_fields.admin.inc',
-  );
-  foreach (semantic_fields_get_presets() as $preset) {
-    $items['admin/config/content/semantic-field-formats/' . $preset['name'] . '/edit'] = array(
-      'title' => 'Edit field format',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('semantic_fields_preset_form', 4),
-      'access arguments' => array('administer semantic fields'),
-      'type' => MENU_CALLBACK,
-      'file' => 'semantic_fields.admin.inc',
-    );
-    $items['admin/config/content/semantic-field-formats/' . $preset['name'] . '/delete'] = array(
-      'title' => 'Delete field format',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('semantic_fields_preset_delete_form', 4),
-      'access arguments' => array('administer semantic fields'),
-      'type' => MENU_CALLBACK,
-      'file' => 'semantic_fields.admin.inc',
-    );
-  }
-
-  return $items;
-}
 
 /**
- * Implementation of hook_permission()
+ * Implements hook_permission().
  */
 function semantic_fields_permission() {
   return array(
@@ -63,7 +17,7 @@ function semantic_fields_permission() {
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  */
 function semantic_fields_form_alter(&$form, &$form_state, $form_id) {  
   if ($form_id == "field_ui_display_overview_form") {
@@ -90,12 +44,14 @@ function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+/**
+ * Acts on submit.
+ */
 function semantic_fields_field_ui_display_overview_form_submit(&$form, &$form_state) {
   $form_values = $form_state['values'];
   $entity_type = $form['#entity_type'];
   $bundle = $form['#bundle'];
   $view_mode = $form['#view_mode'];
-
   foreach ($form['#fields'] as $field_name) {
     // Retrieve the stored instance settings to merge with the incoming values.
     $instance = field_read_instance($entity_type, $field_name, $bundle);
@@ -105,7 +61,7 @@ function semantic_fields_field_ui_display_overview_form_submit(&$form, &$form_st
 }
 
 /**
- * Implementation of hook_field_formatter_info().
+ * Implements hook_field_formatter_info().
  */
 function semantic_fields_field_formatter_info_alter(&$info) {
   foreach (array_keys($info) as $name) {
@@ -113,55 +69,57 @@ function semantic_fields_field_formatter_info_alter(&$info) {
   }
 }
 
+/**
+ * Load all the presets, from file or database
+ */
 function semantic_fields_get_presets() {
-  $results = db_select('semantic_fields_preset', 'p', array('fetch' => PDO::FETCH_ASSOC))
-    ->fields('p')
-    ->orderBy('human_name')
-    ->execute();
-
+  ctools_include('export');
+  $results = ctools_export_load_object('semantic_fields_preset','all', array());
   $presets = array();
-  while ($preset = $results->fetchAssoc()) {
-    $preset['data'] = unserialize($preset['data']);
+  foreach ($results as $result) {
+    $preset['name'] = $result->name;
+    $preset['admin_title'] = $result->admin_title; 
+    $preset['description'] = $result->description;
+    $preset['data'] = $result->data;
     $presets[] = $preset;
   }
-
-  return $presets;
+ return $presets;
 }
 
+/**
+ * Load specific/s preset
+ */
 function semantic_fields_preset_load($name) {
-  $presets = &drupal_static(__FUNCTION__, array());
-
-  if (!isset($presets[$name])) {
-    $preset = db_select('semantic_fields_preset', 'p')
-      ->fields('p')
-      ->condition('name', $name)
-      ->execute()
-      ->fetchAssoc();
-    if ($preset) {
-      $preset['data'] = unserialize($preset['data']);
-      $presets[$name] = $preset;
-    }
+  ctools_include('export');
+  $result = ctools_export_load_object('semantic_fields_preset','names', array($name));
+  if (isset($result[$name])) {
+    return $result[$name];
   }
-
-  return (isset($presets[$name]) && !empty($presets[$name])) ? $presets[$name] : array();
 }
 
+/**
+ * Get options
+ */
 function semantic_fields_get_preset_options() {
   $presets = semantic_fields_get_presets();
-
   $options = array();
   foreach($presets as $preset) {
-    $options[$preset['name']] = $preset['human_name'];
+    $options[$preset['name']] = $preset['admin_title'];
   }
-  
   return $options;
 }
 
+/**
+ * Implements hook_theme_registry_alter().
+ */
 function semantic_fields_theme_registry_alter(&$theme_registry) {
   $theme_registry['field']['theme path'] = drupal_get_path('module', 'semantic_fields');
   $theme_registry['field']['function'] = 'theme_semantic_field';
 }
 
+/**
+ * Implements hook_preprocess_HOOK().
+ */
 function semantic_fields_preprocess_field(&$variables) {
   $element = $variables['element'];
   $field = field_info_field($element['#field_name']);
@@ -211,10 +169,10 @@ function semantic_fields_preprocess_field(&$variables) {
     );
   }
   else {
-    $settings = $preset['data'];
+    $settings = $preset->data;
   }
 
-  // Provide Semantic Fields field template suggestions.
+  // Provide Semantic fields field template suggestions.
   $variables['theme_hook_suggestions'][] = 'semantic_field';
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_type'];
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_name'];
@@ -322,6 +280,9 @@ function semantic_fields_preprocess_field(&$variables) {
   }
 }
 
+/**
+ * Implements hook_process_HOOK().
+ */
 function semantic_fields_process_field(&$variables) {
   // Label
   $variables['label_classes'] = (isset($variables['label_classes_array']) && !empty($variables['label_classes_array'])) ? implode(' ', $variables['label_classes_array']) : '';
@@ -350,9 +311,23 @@ function semantic_fields_theme($existing, $type, $theme, $path) {
   );
 }
 
+/**
+ * Theme the fields
+ */
 function theme_semantic_field(&$variables) {
   $output = '';
-
+  // Token support for nodes
+  if (module_exists('token') == TRUE) {
+    global $user;
+    
+    if (arg(0) == 'node') {
+      $nid = arg(1);
+    }
+    if (isset($nid)) {
+      $node = node_load($nid);
+      $data = array('node' => $node, 'user' => $user);
+    }
+  }  
   // Render the label, if it's not hidden.
   if (!$variables['label_hidden']) {
     if (!empty($variables['label_element'])) {
@@ -363,7 +338,6 @@ function theme_semantic_field(&$variables) {
       $output .= '</' . $variables['label_element'] . '>';
     }
   }
-
   // Render the items.
   if (!empty($variables['content_element'])) {
     $output .= '<' . $variables['content_element'] . ' class="' . $variables['content_classes'] . '"' . $variables['content_attributes'] . '>';
@@ -375,8 +349,7 @@ function theme_semantic_field(&$variables) {
     $output .= drupal_render($item);
     if ($variables['item_element']) {
       $output .= '</' . $variables['item_element'] . '>';
-    }
-    
+    } 
     if (!empty($variables['item_separator']) && $delta < (count($variables['items']) - 1)) {
       $output .= $variables['item_separator'];
     }
@@ -384,12 +357,10 @@ function theme_semantic_field(&$variables) {
   if (!empty($variables['content_element'])) {
     $output .= '</' . $variables['content_element'] . '>';
   }
-  
   // Render the top-level DIV.
   if (!empty($variables['field_element'])) {
     $output = '<' . $variables['field_element'] . ' class="' . $variables['classes'] . '"' . $variables['attributes'] . '>' . $output . '</' . $variables['field_element'] . '>';
   }
-  
   // Add a prefix and suffix to the field, if specified
   if (!empty($variables['field_prefix'])) {
     $output = $variables['field_prefix'] . $output;
@@ -397,6 +368,30 @@ function theme_semantic_field(&$variables) {
   if (!empty($variables['field_suffix'])) {
     $output .= $variables['field_suffix'];
   }
-
-  return $output;
+  if (isset($nid)) {
+    return token_replace($output, $data);
+  }
+  else {
+    return $output; 
+  }
 }
+
+/**
+* Implements hook_ctools_plugin_api().
+*/
+function semantic_fields_ctools_plugin_api($owner, $api) {
+  if ($owner == 'semantic_fields' && $api == 'semantic_fields') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+  function semantic_fields_ctools_plugin_directory($module, $type) {
+    // Load the export_ui plugin.
+    if ($type =='export_ui') {
+      return 'plugins/export_ui';
+    }
+  }
+  
