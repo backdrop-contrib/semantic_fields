@@ -1,0 +1,37 @@
+<?php
+/**
+ * @file
+ * Tests for semantic_fields.module.
+ */
+
+class SemanticFieldsPermissionsTestCase extends DrupalWebTestCase {
+  protected $privileged_user;
+  protected $simple_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Semantic Fields permissions',
+      'description' => 'Test for permissions to administer Semantic Fields.',
+      'group' => 'Semantic Fields'
+    );
+  }
+
+  function setUp() {
+    parent::setUp(array('semantic_fields'));
+    $this->privileged_user = $this->drupalCreateUser(array('administer semantic fields'));
+    $this->simple_user = $this->drupalCreateUser(array());
+  }
+
+  /**
+   * Tests access to Semantic fields configuration.
+   */
+  function testPermission() {
+    $this->drupalLogin($this->privileged_user);
+    $this->drupalGet('admin/structure/semantic_fields');
+    $this->assertResponse(200, t('User allowed.'));
+
+    $this->drupalLogin($this->simple_user);
+    $this->drupalGet('admin/structure/semantic_fields');
+    $this->assertResponse(403, t('User denied.'));
+  }
+}

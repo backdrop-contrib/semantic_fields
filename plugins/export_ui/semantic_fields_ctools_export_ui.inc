@@ -9,7 +9,7 @@
  */
 $plugin = array(
   'schema' => 'semantic_fields_preset',
-  'access' => 'administer semantic fields ',
+  'access' => 'administer semantic fields',
   'menu' => array(
     'menu item' => 'semantic_fields',
     'menu title' => 'Semantic fields',

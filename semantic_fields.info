@@ -4,3 +4,5 @@ package = Fields
 dependencies[] = field
 dependencies[] = ctools
 core = 7.x
+
+files[] = semantic_fields.test
