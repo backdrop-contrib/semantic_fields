@@ -38,8 +38,6 @@ class SemanticFieldsPermissionsTestCase extends DrupalWebTestCase {
     //Import preset. @todo: make this work ...
     $preset_import['import'] = testImportPreset();
     $this->drupalPost('admin/structure/semantic_fields/import', $preset_import, t('Continue'));
- 
-    
     
     $this->drupalLogin($this->simple_user);
     $this->drupalGet('admin/structure/semantic_fields');
