@@ -29,9 +29,44 @@ class SemanticFieldsPermissionsTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->privileged_user);
     $this->drupalGet('admin/structure/semantic_fields');
     $this->assertResponse(200, t('User allowed.'));
-
+  
+    $preset = testPreset($this->randomName());
+  
+    $this->drupalPost('admin/structure/semantic_fields/add', $preset, t('Save'));
+    $this->assertText('ipsum has been created.', t('The ipsum preset were created'));
+    
     $this->drupalLogin($this->simple_user);
     $this->drupalGet('admin/structure/semantic_fields');
     $this->assertResponse(403, t('User denied.'));
   }
 }
+
+  function testPreset($name) {
+    $preset = array();
+    $preset['admin_title'] = $name;
+    $preset['name'] = 'ipsum';
+    $preset['description'] = 'Ipsum preset';
+    $preset['semantic_field_settings[field_element]'] = 'div';
+    $preset['semantic_field_settings[field_class]'] = '';
+    $preset['semantic_field_settings[field_prefix]'] = '';
+    $preset['semantic_field_settings[field_suffix]'] = '';
+    $preset['semantic_field_settings[label_element_above]'] = 'h3';
+    $preset['semantic_field_settings[label_class_above]'] = '';
+    $preset['semantic_field_settings[label_suffix_above]'] = '';
+    $preset['semantic_field_settings[label_element_inline]'] = 'span';
+    $preset['semantic_field_settings[label_class_inline]'] = '';
+    $preset['semantic_field_settings[label_suffix_inline]'] = ':';
+    $preset['semantic_field_settings[multiple_items_element]'] = 'div';
+    $preset['semantic_field_settings[multiple_items_class]'] = '';
+    $preset['semantic_field_settings[multiple_item_element]'] = 'div';
+    $preset['semantic_field_settings[multiple_item_class]'] = '';
+    $preset['semantic_field_settings[multiple_item_separator]'] = '';
+    $preset['semantic_field_settings[single_item_element]'] = 'div';
+    $preset['semantic_field_settings[single_item_class]'] = '';
+    $preset['semantic_field_settings[last_every_nth]'] = '0';
+    $preset['semantic_field_settings[first_class]'] = 'first';
+    $preset['semantic_field_settings[last_class]'] = 'last';
+    $preset['semantic_field_settings[striping_classes]'] = 'odd even';  
+    
+    return $preset;
+  }
