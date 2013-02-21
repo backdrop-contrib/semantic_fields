@@ -179,19 +179,17 @@ function semantic_fields_preprocess_field(&$variables) {
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#bundle'];
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_name'] . '__' . $element['#bundle'];
 
-
-  
   // Field
-  $variables['field_element'] = check_plain($settings['field_element']);
-  $variables['field_prefix'] = !empty($settings['field_prefix']) ? check_plain($settings['field_prefix']) : '';
-  $variables['field_suffix'] = !empty($settings['field_suffix']) ? check_plain($settings['field_suffix']) : '';
+  $variables['field_element'] = $settings['field_element'];
+  $variables['field_prefix'] = !empty($settings['field_prefix']) ? $settings['field_prefix'] : '';
+  $variables['field_suffix'] = !empty($settings['field_suffix']) ? $settings['field_suffix'] : '';
   if (!empty($settings['field_class'])) {
-    $variables['classes_array'][] = check_plain($settings['field_class']);
+    $variables['classes_array'][] = $settings['field_class'];
   }
 
   // Label
-  $variables['label_element'] = ($element['#label_display'] == "above") ? check_plain($settings['label_element_above']) : check_plain($settings['label_element_inline']);
-  $variables['label_suffix'] = ($element['#label_display'] == "above") ? check_plain($settings['label_suffix_above']) : check_plain($settings['label_suffix_inline']);
+  $variables['label_element'] = ($element['#label_display'] == "above") ? $settings['label_element_above'] : $settings['label_element_inline'];
+  $variables['label_suffix'] = ($element['#label_display'] == "above") ? $settings['label_suffix_above'] : $settings['label_suffix_inline'];
   if (!isset($variables['label_classes_array'])) {
     $variables['label_classes_array'] = array(
       'field-label',
@@ -199,12 +197,12 @@ function semantic_fields_preprocess_field(&$variables) {
   }
   if ($element['#label_display'] == "above") {
     if (!empty($settings['label_class_above'])) {
-      $variables['label_classes_array'][] = check_plain($settings['label_class_above']);
+      $variables['label_classes_array'][] = $settings['label_class_above'];
     }
   }
   else if ($element['#label_display'] == "inline") {
     if (!empty($settings['label_class_inline'])) {
-      $variables['label_classes_array'][] = check_plain($settings['label_class_inline']);
+      $variables['label_classes_array'][] = $settings['label_class_inline'];
     }
   }
 
@@ -217,46 +215,46 @@ function semantic_fields_preprocess_field(&$variables) {
   $num_items = count($variables['items']);
   if ($num_items == 1) {
     if (!$settings['use_singlevalue_settings']) {
-      $variables['content_element'] = check_plain($settings['multiple_items_element']);
+      $variables['content_element'] = $settings['multiple_items_element'];
     }
     else {
       $variables['content_element'] = '';
     }
   }
   else {
-    $variables['content_element'] = check_plain($settings['multiple_items_element']);
+    $variables['content_element'] = $settings['multiple_items_element'];
     if (!empty($settings['multiple_items_class'])) {
-      $variables['content_classes_array'][] = check_plain($settings['multiple_items_class']);
+      $variables['content_classes_array'][] = $settings['multiple_items_class'];
     }
   }
 
   // Item
   if ($num_items == 1 && $settings['use_singlevalue_settings']) {
-    $variables['item_element'] = check_plain($settings['single_item_element']);
+    $variables['item_element'] = $settings['single_item_element'];
     $variables['item_separator'] = '';
   }
   else {
-    $variables['item_element'] = check_plain($settings['multiple_item_element']);
-    $variables['item_separator'] = ($num_items > 1 && !empty($settings['multiple_item_separator']) ? check_plain($settings['multiple_item_separator']) : '');
+    $variables['item_element'] = $settings['multiple_item_element'];
+    $variables['item_separator'] = ($num_items > 1 && !empty($settings['multiple_item_separator']) ? $settings['multiple_item_separator'] : '');
   }
 
   $variables['item_classes'] = array();
-  $last_every_nth = !empty($settings['last_every_nth']) ? check_plain($settings['last_every_nth']) : 0;
+  $last_every_nth = !empty($settings['last_every_nth']) ? $settings['last_every_nth'] : 0;
   foreach ($variables['items'] as $delta => $item) {
     $item_classes = array(
       'field-item',
     );
     if ($num_items == 1) {
       if ($settings['use_singlevalue_settings'] && $settings['single_item_class']) {
-        $item_classes[] = check_plain($settings['single_item_class']);
+        $item_classes[] = $settings['single_item_class'];
       }
       elseif (!$settings['use_singlevalue_settings'] && $settings['multiple_item_class']) {
-        $item_classes[] = check_plain($settings['multiple_item_class']);
+        $item_classes[] = $settings['multiple_item_class'];
       }
     }
     elseif ($num_items > 1) {
       if ($settings['multiple_item_class']) {
-        $item_classes[] = check_plain($settings['multiple_item_class']);
+        $item_classes[] = $settings['multiple_item_class'];
       }
     }
 
@@ -269,12 +267,12 @@ function semantic_fields_preprocess_field(&$variables) {
 
     if ($settings['first_class']) {
       if (($last_every_nth && $delta % $last_every_nth == 0) || (!$last_every_nth && $delta == 0)) {
-        $item_classes[] = check_plain($settings['first_class']);
+        $item_classes[] = $settings['first_class'];
       }
     }
     if ($settings['last_class']) {
       if (($last_every_nth && ($delta + 1) % $last_every_nth == 0) || (!$last_every_nth && ($delta + 1) == $num_items)) {
-        $item_classes[] = check_plain($settings['last_class']);
+        $item_classes[] = $settings['last_class'];
       }
     }
 
@@ -396,4 +394,3 @@ function semantic_fields_ctools_plugin_api($owner, $api) {
       return 'plugins/export_ui';
     }
   }
-  
