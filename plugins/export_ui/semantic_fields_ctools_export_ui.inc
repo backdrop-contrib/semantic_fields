@@ -330,7 +330,7 @@ function semantic_fields_ctools_export_ui_form(&$form, &$form_state) {
           '!token_tree' => theme('token_tree', array(
           'token_types' => 'all', 
           'click_insert' => FALSE, 
-          'show_restricted' => TRUE)))),
+          'show_restricted' => TRUE))),
     );
   }
   else {
