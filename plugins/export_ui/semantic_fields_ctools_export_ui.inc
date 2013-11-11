@@ -113,7 +113,7 @@ function semantic_fields_ctools_export_ui_form(&$form, &$form_state) {
     '#title' => t('Surround the label with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will surround the label.'),
     '#default_value' => isset($preset->data['label_element_above']) ? $preset->data['label_element_above'] : 'h3',
-    '#required' => TRUE,
+    '#required' => FALSE,
     '#size' => 20,
   );
   $form['semantic_field_settings']['label_fieldset']['above']['label_class_above'] = array(
@@ -146,7 +146,7 @@ function semantic_fields_ctools_export_ui_form(&$form, &$form_state) {
     '#title' => t('Surround the label with'),
     '#description' => t('Insert the desired <abbr title="Hyper Text Markup Language">HTML</abbr> element that will surround the label.'),
     '#default_value' => isset($preset->data['label_element_inline']) ? $preset->data['label_element_inline'] : 'span',
-    '#required' => TRUE,
+    '#required' => FALSE,
     '#size' => 20,
   );
   $form['semantic_field_settings']['label_fieldset']['inline']['label_class_inline'] = array(

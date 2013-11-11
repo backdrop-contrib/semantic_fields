@@ -331,6 +331,7 @@ function theme_semantic_field(&$variables) {
     }
   }  
   // Render the label, if it's not hidden.
+  $variables['label_element'] = trim($variables['label_element']);
   if (!$variables['label_hidden']) {
     if (!empty($variables['label_element'])) {
       $output .= '<' . $variables['label_element'] . ' class="' . $variables['label_classes'] . '"' . $variables['title_attributes'] . '>';
