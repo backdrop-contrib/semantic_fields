@@ -3,4 +3,5 @@ description = "Provides default presets for Semantic Fields"
 package = Fields
 dependencies[] = field
 dependencies[] = ctools
+dependencies[] = semantic_fields
 core = 7.x
