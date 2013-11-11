@@ -325,12 +325,15 @@ function semantic_fields_ctools_export_ui_form(&$form, &$form_state) {
   );
   if (module_exists('token') == TRUE) {
     $form['semantic_field_settings']['tokens_fieldset']['info'] = array(
-      '#markup' => t('You could use tokens, like
-        <em>[node:title]</em> and <em>[node:url]</em> !token_tree'), array(
-          '!token_tree' => theme('token_tree', array(
-          'token_types' => 'all', 
-          'click_insert' => FALSE, 
-          'show_restricted' => TRUE))),
+      '#markup' => t('You could use tokens, like <em>[node:title]</em> and <em>[node:url]</em> !token_tree', array(
+        '!token_tree' => theme(
+          'token_tree', array(
+            'token_types' => 'all',
+            'click_insert' => FALSE,
+            'show_restricted' => TRUE,
+          )
+        )
+      )),
     );
   }
   else {
