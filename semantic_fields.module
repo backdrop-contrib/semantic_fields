@@ -218,6 +218,9 @@ function semantic_fields_preprocess_field(&$variables) {
   if ($num_items == 1) {
     if (!$settings['use_singlevalue_settings']) {
       $variables['content_element'] = check_plain($settings['multiple_items_element']);
+      if (!empty($settings['multiple_items_class'])) {
+        $variables['content_classes_array'][] = check_plain($settings['multiple_items_class']);
+      }
     }
     else {
       $variables['content_element'] = '';
