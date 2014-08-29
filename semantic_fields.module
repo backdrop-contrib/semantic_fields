@@ -19,7 +19,9 @@ function semantic_fields_permission() {
 /**
  * Implements hook_form_alter().
  */
-function semantic_fields_form_alter(&$form, &$form_state, $form_id) {  
+function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
+
+  // Manage Display forms.
   if ($form_id == "field_ui_display_overview_form") {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
@@ -32,15 +34,39 @@ function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
       $display = $instance['display'][$view_mode];
       $settings = (isset($form_state['formatter_settings'][$name]) ? $form_state['formatter_settings'][$name] : $display['settings']);
 
+      $options = semantic_fields_get_preset_options();
+      $options = array('default' => t('Default')) + $options;
+      $default_format = isset($instance['settings']['semantic_field_format']) ? $instance['settings']['semantic_field_format'] : NULL;
+      if (!isset($options[$default_format])) {
+        $default_format = NULL;
+      }
+
       $form['fields'][$name]['semantic_field_format'] = array(
         '#type' => 'select',
-        '#options' => semantic_fields_get_preset_options(),
-        '#empty_option' => t('Default'),
+        '#options' => $options,
+        '#empty_option' => isset($default_format) ? t('Field default (!default_value)', array('!default_value' => $options[$default_format])) : t('Field default (Default)'),
         '#default_value' => (isset($settings['semantic_field_format']) ? $settings['semantic_field_format'] : ''),
       );
     }
     
     $form['#submit'] = array_merge(array('semantic_fields_field_ui_display_overview_form_submit'), $form['#submit']);
+  }
+
+  // Field edit forms.
+  elseif ($form_id == "field_ui_field_edit_form") {
+    $instance = $form['#instance'];
+    $entity_type = $instance['entity_type'];
+    $bundle = $instance['bundle'];
+    $settings = $instance['settings'];
+
+    $form['instance']['settings']['semantic_field_format'] = array(
+      '#title' => t('<em>Default</em> field format'),
+      '#description' => t('The default markup used when rendering this field. This may be overridden in the Manage Display UI.'),
+      '#type' => 'select',
+      '#options' => semantic_fields_get_preset_options(),
+      '#empty_option' => t('Default'),
+      '#default_value' => (isset($settings['semantic_field_format']) ? $settings['semantic_field_format'] : ''),
+    );
   }
 }
 
@@ -125,16 +151,25 @@ function semantic_fields_preprocess_field(&$variables) {
   $field = field_info_field($element['#field_name']);
   $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
   $display = (isset($instance['display'][$element['#view_mode']]) ? $instance['display'][$element['#view_mode']] : $instance['display']['default']);
-  
+
   $use_defaults = FALSE;
-  if (!isset($display['settings']['semantic_field_format']) || empty($display['settings']['semantic_field_format'])) {
-    // Use defaults if Semantic Fields settings do not exist.
+  if (!empty($display['settings']['semantic_field_format'])) {
+    $format = $display['settings']['semantic_field_format'];
+  }
+  elseif(!empty($instance['settings']['semantic_field_format'])) {
+    $format = $instance['settings']['semantic_field_format'];
+  }
+  else {
+    $use_defaults = TRUE;
+  }
+
+  if (isset($format) && ($format === 'default')) {
     $use_defaults = TRUE;
   }
 
   // Load semantic field display format settings.
   if (!$use_defaults) {
-    $preset = semantic_fields_preset_load($display['settings']['semantic_field_format']);
+    $preset = semantic_fields_preset_load($format);
   }
   if (empty($preset)) {
     // Use defaults if settings could not be loaded.
