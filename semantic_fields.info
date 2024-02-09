@@ -3,6 +3,5 @@ name = Semantic Fields
 description = "Provides semantic HTML output settings for each field type."
 package = Fields
 dependencies[] = field
-core = 7.x
 backdrop = 1.x
 configure = admin/structure/semantic_fields
