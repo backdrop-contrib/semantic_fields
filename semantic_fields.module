@@ -99,8 +99,9 @@ function semantic_fields_field_formatter_info_alter(&$info) {
  * Load all the presets, from file or database
  */
 function semantic_fields_get_presets() {
-  ctools_include('export');
-  $results = ctools_export_load_object('semantic_fields_preset','all', array());
+  //removing ctools functions that did not get ported to backdrop
+  //ctools_include('export');
+  //$results = ctools_export_load_object('semantic_fields_preset','all', array());
   $presets = array();
   foreach ($results as $result) {
     $preset['name'] = $result->name;
@@ -116,8 +117,9 @@ function semantic_fields_get_presets() {
  * Load specific/s preset
  */
 function semantic_fields_preset_load($name) {
-  ctools_include('export');
-  $result = ctools_export_load_object('semantic_fields_preset','names', array($name));
+  //removing ctools functions that did not get ported to backdrop
+  //ctools_include('export');
+  //$result = ctools_export_load_object('semantic_fields_preset','names', array($name));
   if (isset($result[$name])) {
     return $result[$name];
   }
