@@ -22,7 +22,7 @@ function semantic_fields_permission() {
 function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
 
   // Manage Display forms.
-  if ($form_id == "field_ui_display_overview_form") {
+  if ($form_id == "field_ui_display_form") {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $view_mode = $form['#view_mode'];
@@ -99,9 +99,9 @@ function semantic_fields_field_formatter_info_alter(&$info) {
  * Load all the presets, from file or database
  */
 function semantic_fields_get_presets() {
-  //removing ctools functions that did not get ported to backdrop
-  //ctools_include('export');
-  //$results = ctools_export_load_object('semantic_fields_preset','all', array());
+  $query = db_select('semantic_fields_preset', 's');
+  $query->fields('s', ['name', 'admin_title', 'description', 'data']);
+  $results = $query->execute();
   $presets = array();
   foreach ($results as $result) {
     $preset['name'] = $result->name;
@@ -117,11 +117,14 @@ function semantic_fields_get_presets() {
  * Load specific/s preset
  */
 function semantic_fields_preset_load($name) {
-  //removing ctools functions that did not get ported to backdrop
-  //ctools_include('export');
-  //$result = ctools_export_load_object('semantic_fields_preset','names', array($name));
-  if (isset($result[$name])) {
-    return $result[$name];
+  $query = db_select('semantic_fields_preset', 's');
+  $query->fields('s', ['name', 'admin_title', 'description', 'data']);
+  $query->condition('s.name', $name);
+  $results = $query->execute();
+  foreach ($results as $result) {
+    if (isset($result)) {
+      return $result;
+    }
   }
 }
 
@@ -141,7 +144,7 @@ function semantic_fields_get_preset_options() {
  * Implements hook_theme_registry_alter().
  */
 function semantic_fields_theme_registry_alter(&$theme_registry) {
-  $theme_registry['field']['theme path'] = drupal_get_path('module', 'semantic_fields');
+  $theme_registry['field']['theme path'] = backdrop_get_path('module', 'semantic_fields');
   $theme_registry['field']['function'] = 'theme_semantic_field';
 }
 
@@ -206,7 +209,7 @@ function semantic_fields_preprocess_field(&$variables) {
     );
   }
   else {
-    $settings = $preset->data;
+    $settings = unserialize($preset->data);
   }
 
   // Provide Semantic fields field template suggestions.
@@ -217,7 +220,6 @@ function semantic_fields_preprocess_field(&$variables) {
   $variables['theme_hook_suggestions'][] = 'semantic_field__' . $element['#field_name'] . '__' . $element['#bundle'];
 
 
-  
   // Field
   $variables['field_element'] = check_plain($settings['field_element']);
   $variables['field_prefix'] = !empty($settings['field_prefix']) ? check_plain($settings['field_prefix']) : '';
@@ -387,9 +389,9 @@ function theme_semantic_field(&$variables) {
   }
   foreach ($variables['items'] as $delta => $item) {
     if ($variables['item_element']) {
-      $output .= '<' . $variables['item_element'] . ' class="' . $variables['item_classes'][$delta] . '"' . $variables['item_attributes'][$delta] . '>';
+      $output .= '<' . $variables['item_element'] . ' class="' . implode(' ', $variables['item_classes'][$delta]) . '"' . $variables['item_attributes'][$delta] . '>';
     }
-    $output .= drupal_render($item);
+    $output .= backdrop_render($item);
     if ($variables['item_element']) {
       $output .= '</' . $variables['item_element'] . '>';
     } 

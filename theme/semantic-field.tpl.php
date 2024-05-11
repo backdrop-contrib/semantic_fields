@@ -52,11 +52,11 @@ HTML comment.
 <?php print $field_prefix; ?>
 <?php endif; ?>
 <?php if (!empty($field_element)) : ?>
-<<?php print $field_element; ?> class="<?php print $classes; ?>"<?php print $attributes; ?>>
+<<?php print $field_element; ?> class="<?php print implode(' ', $classes); ?>"<?php print $attributes; ?>>
 <?php endif; ?>
   <?php if (!$label_hidden) : ?>
     <?php if (!empty($label_element)) : ?>
-    <<?php print $label_element; ?> class="<?php print $label_classes; ?>"<?php print $title_attributes; ?>>
+    <<?php print $label_element; ?> class="<?php print implode(' ', $label_classes); ?>"<?php print $title_attributes; ?>>
     <?php endif; ?>
       <?php print $label . $label_suffix ?>&nbsp;
     <?php if (!empty($label_element)) : ?>
@@ -64,10 +64,10 @@ HTML comment.
     <?php endif; ?>
   <?php endif; ?>
   <?php if (!empty($content_element)): ?>
-  <<?php print $content_element; ?> class="<?php print $content_classes; ?>"<?php print $content_attributes; ?>>
+  <<?php print $content_element; ?> class="<?php print implode(' ', $content_classes); ?>"<?php print $content_attributes; ?>>
   <?php endif; ?>
     <?php foreach ($items as $delta => $item) : ?>
-      <<?php print $item_element; ?> class="<?php print $item_classes[$delta]; ?>"<?php print $item_attributes[$delta]; ?>>
+      <<?php print $item_element; ?> class="<?php print implode(' ', $item_classes[$delta]); ?>"<?php print $item_attributes[$delta]; ?>>
         <?php print render($item); ?>
       </<?php print $item_element; ?>>
       
