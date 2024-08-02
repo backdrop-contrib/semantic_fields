@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * The functionality of the module 
+ * The functionality of the module
  */
 
 /**
@@ -26,7 +26,7 @@ function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
     $entity_type = $form['#entity_type'];
     $bundle = $form['#bundle'];
     $view_mode = $form['#view_mode'];
-    
+
     $form['fields']['#header'][] = t('Field format');
 
     foreach (element_children($form['fields']) as $name) {
@@ -48,7 +48,7 @@ function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
         '#default_value' => (isset($settings['semantic_field_format']) ? $settings['semantic_field_format'] : ''),
       );
     }
-    
+
     $form['#submit'] = array_merge(array('semantic_fields_field_ui_display_overview_form_submit'), $form['#submit']);
   }
 
@@ -105,7 +105,7 @@ function semantic_fields_get_presets() {
   $presets = array();
   foreach ($results as $result) {
     $preset['name'] = $result->name;
-    $preset['admin_title'] = $result->admin_title; 
+    $preset['admin_title'] = $result->admin_title;
     $preset['description'] = $result->description;
     $preset['data'] = $result->data;
     $presets[] = $preset;
@@ -333,7 +333,7 @@ function semantic_fields_process_field(&$variables) {
 
   // Items
   $variables['content_classes'] = (isset($variables['content_classes_array']) && !empty($variables['label_classes_array'])) ? implode(' ', $variables['content_classes_array']) : '';
-  
+
   // Item
   if (isset($variables['item_classes']) && is_array($variables['item_classes'])) {
     foreach ($variables['item_classes'] as $delta => $classes) {
@@ -363,7 +363,7 @@ function theme_semantic_field(&$variables) {
   // Token support for nodes
   if (module_exists('token') == TRUE) {
     global $user;
-    
+
     if (arg(0) == 'node') {
       $nid = arg(1);
     }
@@ -371,11 +371,14 @@ function theme_semantic_field(&$variables) {
       $node = node_load($nid);
       $data = array('node' => $node, 'user' => $user);
     }
-  }  
+  }
   // Render the label, if it's not hidden.
   $variables['label_element'] = trim($variables['label_element']);
   if (!$variables['label_hidden']) {
     if (!empty($variables['label_element'])) {
+      if (is_array($variables['label_classes'])) {
+        $variables['label_classes'] = implode(' ', $variables['label_classes']);
+      }
       $output .= '<' . $variables['label_element'] . ' class="' . $variables['label_classes'] . '"' . $variables['title_attributes'] . '>';
     }
     $output .= $variables['label'] . $variables['label_suffix'] . '&nbsp;';
@@ -385,16 +388,28 @@ function theme_semantic_field(&$variables) {
   }
   // Render the items.
   if (!empty($variables['content_element'])) {
-    $output .= '<' . $variables['content_element'] . ' class="' . $variables['content_classes'] . '"' . $variables['content_attributes'] . '>';
+    if (is_array($variables['content_classes'])) {
+      $variables['content_classes'] = implode(' ', $variables['content_classes']);
+    }
+    if (is_array($variables['content_attributes'])) {
+      $variables['content_attributes'] = implode(' ', $variables['content_attributes']);
+    }
+    $output .= '<' . $variables['content_element'] . ' class="field-items ' . $variables['content_classes'] . '"' . $variables['content_attributes'] . '>';
   }
   foreach ($variables['items'] as $delta => $item) {
     if ($variables['item_element']) {
-      $output .= '<' . $variables['item_element'] . ' class="' . implode(' ', $variables['item_classes'][$delta]) . '"' . $variables['item_attributes'][$delta] . '>';
+      if (is_array($variables['item_classes'][$delta])) {
+        $variables['item_classes'][$delta] = implode(' ', $variables['item_classes'][$delta]);
+      }
+      if (is_array($variables['item_attributes'][$delta])) {
+        $variables['item_attributes'][$delta] = implode(' ', $variables['item_attributes'][$delta]);
+      }
+      $output .= '<' . $variables['item_element'] . ' class="' . $variables['item_classes'][$delta] . '"' . $variables['item_attributes'][$delta] . '>';
     }
     $output .= backdrop_render($item);
     if ($variables['item_element']) {
       $output .= '</' . $variables['item_element'] . '>';
-    } 
+    }
     if (!empty($variables['item_separator']) && $delta < (count($variables['items']) - 1)) {
       $output .= $variables['item_separator'];
     }
@@ -404,6 +419,12 @@ function theme_semantic_field(&$variables) {
   }
   // Render the top-level DIV.
   if (!empty($variables['field_element'])) {
+    if (is_array($variables['classes'])) {
+      $variables['classes'] = implode(' ', $variables['classes']);
+    }
+    if (is_array($variables['attributes'])) {
+      $variables['attributes'] = implode(' ', $variables['attributes']);
+    }
     $output = '<' . $variables['field_element'] . ' class="' . $variables['classes'] . '"' . $variables['attributes'] . '>' . $output . '</' . $variables['field_element'] . '>';
   }
   // Add a prefix and suffix to the field, if specified
@@ -417,7 +438,7 @@ function theme_semantic_field(&$variables) {
     return token_replace($output, $data);
   }
   else {
-    return $output; 
+    return $output;
   }
 }
 
