@@ -388,11 +388,19 @@ function theme_semantic_field(&$variables) {
   }
   // Render the items.
   if (!empty($variables['content_element'])) {
-    if (is_array($variables['content_classes'])) {
+    if (!empty($variables['content_classes'])
+      && is_array($variables['content_classes'])) {
       $variables['content_classes'] = implode(' ', $variables['content_classes']);
     }
-    if (is_array($variables['content_attributes'])) {
+    else {
+      $variables['content_classes'] = '';
+    }
+    if (!empty($variables['content_attributes'])
+      && is_array($variables['content_attributes'])) {
       $variables['content_attributes'] = implode(' ', $variables['content_attributes']);
+    }
+    else {
+      $variables['content_attributes'] = '';
     }
     $output .= '<' . $variables['content_element'] . ' class="field-items ' . $variables['content_classes'] . '"' . $variables['content_attributes'] . '>';
   }
