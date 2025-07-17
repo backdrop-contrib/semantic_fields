@@ -31,6 +31,9 @@ function semantic_fields_form_alter(&$form, &$form_state, $form_id) {
 
     foreach (element_children($form['fields']) as $name) {
       $instance = field_info_instance($entity_type, $name, $bundle);
+      if (!$instance) {
+        continue;
+      }
       $display = $instance['display'][$view_mode];
       $settings = (isset($form_state['formatter_settings'][$name]) ? $form_state['formatter_settings'][$name] : $display['settings']);
 
